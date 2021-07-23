@@ -300,3 +300,5 @@ ggplot(mtcars,aes(mpg,fill=fam))+
 ggplot(mtcars,aes(mpg,fill=fam))+ 
   geom_histogram(binwidth=1,position="identity",
                  alpha=0.4) # overlays 
+
+# new----
