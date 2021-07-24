@@ -1,8 +1,9 @@
-# import libraries----
+#++-import libraries-++ ----
 library(tidyverse) 
 library(ggplot2)
 library(lubridate)
 library(hms)
+library(ggthemes)
 
 # Data-viz intri - Datacamp----
   # important to first plot data and check if outliers and extreme values 
@@ -151,7 +152,7 @@ ggplot(mtcars,aes(mpg,qsec,
   # CONTINUOUS = number or time series, quantitative
   # DISCRETE = factor, categorical, qualitative
 
-ggplot(iris,aes(Sepal.Length,Sepal.Width,color=Species))+
+irisp <- ggplot(iris,aes(Sepal.Length,Sepal.Width,color=Species))+
   geom_point(position="jitter")+
   labs(x="Sepal Length", # labels
        y="Sepal Width",
@@ -249,7 +250,7 @@ ggplot(vocab, aes(education, vocabulary)) +
 # type of bar plot that shoes bin(omial) distribution
   # only 1 variable (x) is needed
 
-ggplot(iris,aes(Sepal.Width))+
+irish <- ggplot(iris,aes(Sepal.Width))+
   geom_histogram(binwidth=0.1)
 
 # x axis labels are between bars, not on them
@@ -419,5 +420,94 @@ p + labs(title= "Here is a title")+ # add a title
 
 
 # * Modifying whitespace----
+
+p + theme(axis.ticks.length=unit(2, "lines")) # tick lines
+p + theme(legend.key.size=unit(3,"cm")) # change legend size
+p + theme(legend.margin=margin(20,30,40,50,"pt")) 
+
+
+# THEME FLEXIBILITY----
+
+# Defining a theme layer which can be applied to all similar plots
+  # just set all desired characteristics and save to a vector
+
+# * theme variable----
+pinktheme <- theme(axis.text=element_text(color="pink"),
+               plot.title=element_text(color="pink",face="italic"),
+               axis.line=element_line(color="pink"),
+              axis.title = element_text(color="pink",face="italic"),
+              panel.background = element_rect(fill="white"))
+
+irisp + pinktheme 
+irish + pinktheme
+  # another theme() layer can still be added to edit or overwrite settings
+
+
+# * built in themes----
+  # e.g. library(ggthemes)
+  # theme_*()
+
+p + theme_bw()
+p + theme_classic() 
+p + theme_void()
+p + theme_fivethirtyeight()
+p + theme_wsj()
+
+# * setting themes----
+
+theme_recession <- theme(
+  rect = element_rect(fill = "grey92"),
+  legend.key = element_rect(color = NA),
+  axis.ticks = element_blank(),
+  panel.grid = element_blank(),
+  panel.grid.major.y = element_line(color = "white", size = 0.5, linetype = "dotted"),
+  axis.text = element_text(color = "grey25"),
+  plot.title = element_text(face = "italic", size = 16),
+  legend.position = c(0.6, 0.1)
+)
+
+# this can now be set as a defult themese by using
+  # THEME_SET(THEME_NAME) 
+# only do this with a good theme! Or not at all.
+
+
+# EFFECTIVE EXPLANATORY PLOTS----
+
+# simple, clear, small number of observations / variables
+
+# * example----
+  # a big data set with many stats over many variables. E.g. lifespan of
+  # many different species
+    # exploratory plots
+      # historgram
+      # scatter 
+      # use intuitive attractive geoms
+        # add values with geom_text()
+      # appropriate scales
+      # titles and citations to make things clear
+      # remove non data ink ( axis lines )
+      # threshold (mean) line
+
+# * example   
+  #  from DATACAMP
+
+# Set the color scale
+palette <- brewer.pal(5, "RdYlBu")[-(2:4)]
+
+# Add a title and caption
+ggplot(gm2007, aes(x = lifeExp, y = country, color = lifeExp)) +
+  geom_point(size = 4) +
+  geom_segment(aes(xend = 30, yend = country), size = 2) +
+  geom_text(aes(label = round(lifeExp,1)), color = "white", size = 1.5) +
+  scale_x_continuous("", expand = c(0,0), limits = c(30,90), position = "top") +
+  scale_color_gradientn(colors = palette) +
+  labs(title="Highest and lowest life expectancies, 2007",caption="Source: gapminder")
+
+# * annotate
+
+  # DATACAMP DATA
+
+ # this willk be done later on. Very confusing
+
 
 
