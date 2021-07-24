@@ -14,6 +14,11 @@ colnames(mtcars)
 mtcars<-mtcars
 view(mtcars)
 
+# first I will make a new column where "cyl" is a factor. "fcyl"
+mtcars$fcyl<-factor(mtcars$cyl) # it's now categorical, not just numbers
+mtcars$fam<-mtcars$am # same for auto
+mtcars$fam<-recode(mtcars$fam,'0'='Automatic','1'='Manual')
+
 ggplot(mtcars, aes(cyl, mpg)) +
   geom_point()
 
@@ -82,14 +87,7 @@ plt_price_vs_carat_clarity<-plt_price_vs_carat+geom_point(aes(color=clarity)) # 
   # shape = shape, square, round, triangle
     # 1circle, 2triangle, 3+, 4x,5diamond,6triangle2,7boxx,8*,9diamondx,
     # 10circle+, 40(, 60<, 100d and so on forever
-
-# back to MTCARS dataset
-    # first I will make a new column where "cyl" is a factor. "fcyl"
- mtcars$fcyl<-factor(mtcars$cyl) # it's now categorical, not just numbers
-  mtcars$fam<-mtcars$am # same for auto
-  mtcars$fam<-recode(mtcars$fam,'0'='Automatic','1'='Manual')
   
-    
   # COLOR = outside
 ggplot(mtcars, aes(wt, mpg,color=fcyl))+ 
   geom_point(shape=1,size=4)
@@ -185,9 +183,6 @@ ggplot(mtcars, aes(mpg, y=0)) + # I can leave y unplotted and get a default valu
   # And accurate - minimize data loss
 
 # Choice depends on variable
-
-ToothGrowth<-ToothGrowth
-colnames(ToothGrowth)
 
 
 #GEOMETRIES----
@@ -417,8 +412,12 @@ p + theme(panel.grid.major.y = element_line(color="blue",
                                             size=0.5,
                                             linetype='dotted'))
 
+# * element_text
+p + labs(title= "Here is a title")+ # add a title 
+  theme(axis.text = element_text(color="blue"),
+          plot.title = element_text(face="italic", size=16)) # make it italic
 
 
-
+# * Modifying whitespace----
 
 
