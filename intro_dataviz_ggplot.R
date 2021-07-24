@@ -1,8 +1,10 @@
-# import libraries------------------------------------------------------------
+# import libraries----
 library(tidyverse) 
 library(ggplot2)
+library(lubridate)
+library(hms)
 
-# INTRO DATA VIZ - DATACAMP---------------------------------------------------
+# Data-viz intri - Datacamp----
   # important to first plot data and check if outliers and extreme values 
     # influence the way data should be correctly plotted
 
@@ -40,7 +42,7 @@ ggplot(mtcars, aes(wt, mpg, size = disp)) +
 ggplot(mtcars, aes(wt, mpg, shape = disp)) +
   geom_point()
 
-# LAYERS / GEOMETRY-----------------------------------------------------------
+# LAYERS / GEOMETRY----
 str(diamonds)
 diamonds<-diamonds
 colnames(diamonds)
@@ -54,7 +56,7 @@ ggplot(diamonds, aes(carat, price,color=clarity))+
   geom_smooth() # line curve
 
 
-# SAVING PLOT AS VARIABLES------------------------------------------------
+# SAVING PLOT AS VARIABLES----
  # Plots can be saved as variables, which can be added two later on 
   #  using the + operator. This is really useful if you want to make multiple 
    # related plots from a common base.
@@ -66,9 +68,9 @@ plt_price_vs_carat_clarity <- ggplot(diamonds,aes(carat,price)) # plot to variab
 plt_price_vs_carat_clarity<-plt_price_vs_carat+geom_point(aes(color=clarity)) # give color to the points
   
   
-# AESTHETICS & ATTRIBUTES----------------------------------------------------------------
+# AESTHETICS & ATTRIBUTES----
 
-  # Aesthetics------------------------------------------------------------  
+# * Aesthetics----
 # key aesthetics features
   # x, y = axis
   # fill = fill inside color - usually bars / columns / pies
@@ -110,7 +112,7 @@ plt_mpg_vs_wt + geom_label(aes(label = fcyl))
 plt_mpg_vs_wt + geom_text(aes(label = fcyl))
 # this plots the factor level names! cool. just 2 diff styles
 
-  # Attributes------------------------------------------------------
+# * Attributes----
     # aesthetics and attributes are easly mixed up
      # attributes are always called in geom() 
 
@@ -130,7 +132,7 @@ ggplot(mtcars,aes(mpg,qsec,
                   size=hp/wt)) + # size is a calculation
   geom_point()
 
-# Modifying aesthetics --------------------------------------------
+# * Modifying aesthetics----
   # identity, dodge, stack, fill, jitter, jitterdodge, nude
 
   # identity is the default, it means the value in the data frame is 
@@ -173,7 +175,7 @@ ggplot(mtcars, aes(mpg, y=0)) + # I can leave y unplotted and get a default valu
   geom_jitter()+
   ylim(-2,2) # OR define Y as I like
 
-# BEST PRACTICE --------------------------------------------------
+# * Best practice----
 
 # Who is the audience? 
   # Scientific = exploratory data, clear and comprehensive
@@ -188,7 +190,7 @@ ToothGrowth<-ToothGrowth
 colnames(ToothGrowth)
 
 
-#GEOMETRIES----------------------------------------------------
+#GEOMETRIES----
 
  # 48 different geom() options 
 
@@ -208,28 +210,27 @@ ggplot(iris,aes(Sepal.Length,Sepal.Width,col=Species))+
              stroke=2)
   # here I can add on the means, the x,y are inherited from aes!
 
-# OVERPLOTTING---------------------------------------------------
+# OVERPLOTTING----
   
   # Issue with large datasets
   # aligned values on a single axis
   # low precision data
   # integer data
   
-  # 1. overplotting large datasets-----------------------------------  
+  # * overplotting large datasets----
 plt_price_vs_carat_clarity + geom_point(shape=".",alpha=0.5)
   # "." makes point size = 1 pixel. nice for high density data
   
-  # 2. overplotting aligned values----------------------------------
+  # * overplotting aligned values----
 plt_mpg_vs_fcyl_by_fam <- ggplot(mtcars, aes(fcyl, mpg, color = fam))
   plt_mpg_vs_fcyl_by_fam+
     geom_point(position=position_jitter(width=0.3)) # jitter
-
   # this makes points even further aligned along the x axis
 plt_mpg_vs_fcyl_by_fam+
     geom_point(position=position_jitterdodge # jitter dodge
                (jitter.width = 0.3,dodge.width = 0.3)) 
   
-  # 3. overplotting low precision data-----------------------------
+  # * overplotting low precision data----
   # e.g. iris data which is measured in 1mm differences!
 ggplot(iris, aes(Sepal.Length, Sepal.Width, color = Species)) +
   geom_jitter(alpha = 0.5,width=0.1) # adjust width
@@ -238,7 +239,7 @@ ggplot(iris, aes(Sepal.Length, Sepal.Width, color = Species)) +
   geom_point(alpha = 0.5,
              position=position_jitter(width=0.1)) # adjust width
 
-  # 4. overplotting integer data----------------------------------
+  # * overplotting integer data----
     # using DataCamp Vocab dataset
     
 ggplot(vocab, aes(education, vocabulary)) +
@@ -248,7 +249,7 @@ ggplot(vocab, aes(education, vocabulary)) +
   geom_jitter(alpha=0.3,shape=1) # jitter is better and shows trend 
 
 
-# HISTOGRAMS-------------------------------------------------------
+# HISTOGRAMS----
 
 # type of bar plot that shoes bin(omial) distribution
   # only 1 variable (x) is needed
@@ -259,7 +260,7 @@ ggplot(iris,aes(Sepal.Width))+
 # x axis labels are between bars, not on them
 # no spaces
 
-# Different positions---------------------------------------------
+# Different positions----
   # STACK (DEFAULT) 
 ggplot(iris,aes(Sepal.Width, fill=Species))+ # variable separation  
   geom_histogram(binwidth=0.1,
@@ -288,17 +289,136 @@ ggplot(iris,aes(Sepal.Width, fill=Species))+ # variable separation
 ggplot(mtcars,aes(mpg,..density..))+ # shows density on the axis
   geom_histogram(binwidth=1, fill="lightblue")
 
+# * Separate variables------
 ggplot(mtcars,aes(mpg,fill=fam))+ # splits the bars colored by "fam"
   geom_histogram(binwidth=1)
 
+# * Dodge/side by side-----
 ggplot(mtcars,aes(mpg,fill=fam))+ 
   geom_histogram(binwidth=1,position="dodge") # separate colored bars
 
+# *  Fill----
 ggplot(mtcars,aes(mpg,fill=fam))+ 
   geom_histogram(binwidth=1,position="fill") # fills
 
+# * Overlay----
 ggplot(mtcars,aes(mpg,fill=fam))+ 
   geom_histogram(binwidth=1,position="identity",
                  alpha=0.4) # overlays 
 
-# new----
+# BAR PLOTS-----------------------------------------------------
+
+  # geom_bar() counts cases at each x axis
+  # geom_col() plots actual values
+
+  # 2 types of bar plots: 1) absolute counts, 2) distribution
+
+str(iris)
+iris<-iris
+
+irissum<-iris %>% 
+  select(Species,Sepal.Width) %>% 
+  gather(key, value, -Species) %>% 
+  group_by(Species) %>% 
+  summarize(avg=mean(value),
+            sd=sd(value))
+irissum
+
+# THIS TYPE OF PLOT IF STRONGLY DISCOURAGED
+ggplot(irissum,aes(Species,avg))+ 
+  geom_col()+
+  geom_errorbar(aes(ymin=avg-sd, # show error range
+                    ymax=avg+sd,
+                    width=0.1))  
+  
+# * Basic Bar------
+ggplot(mtcars,aes(fcyl,fill=fam))+
+  geom_bar()
+
+# * Fill/Stack----
+ggplot(mtcars,aes(fcyl,fill=fam))+
+  geom_bar(position="fill") # stacked to 100%
+
+# * Dodge/side by side----
+ggplot(mtcars,aes(fcyl,fill=fam))+
+  geom_bar(position="dodge") # variables side-by-side on x-axis
+
+# * Overlaying----
+ggplot(mtcars,aes(fcyl,fill=fam))+
+  geom_bar(position=position_dodge(width=0.2),alpha=0.6)
+
+# * Sequential color palette
+ggplot(iris,aes(Sepal.Width,fill=Species))+
+  geom_bar(position="fill")+
+  scale_fill_brewer(palette = "Set1")
+
+# LINE PLOTS----
+
+# geom_line, geom_path
+# color is usually best way to distinguish unique series e.g.species
+
+head(economics)
+# * absolute data series----
+ggplot(economics,aes(date,y=unemploy/pop))+
+  geom_line()
+
+# * proportion of data----
+ggplot(economics,aes(date,y=unemploy/pop))+ # y is the proportion now
+  geom_line()
+
+# * displaying groups----
+
+# using datacamp FISH.SPECIES dataset where all species data is arranged
+  # in a row, years are also in a row - not cols!!!
+ggplot(fish.species, aes(x = Year, y = Rainbow)) +
+  geom_line()
+
+# with FISH.TIDY all data is in 3 cols [Species, Year, Capture]
+ggplot(fish.tidy, aes(Year, Capture)) +
+  geom_line(aes(group=Species))
+
+# to add color by separate species
+ggplot(fish.tidy, aes(x = Year, y = Capture, color = Species)) +
+  geom_line(aes(group=Species))
+
+
+# THEMES----
+
+# non-data elements of the chart: 
+  # elemnt_text() = text
+  # element_line() = lines on the chart
+  # element_rect() = rectangle
+    # within these 3 are even more details for full customization!
+
+# element_blank() can be used to remove an aspect of the chart
+
+p <- ggplot(mtcars,aes(fcyl,fill=fam))+
+  geom_bar()
+# p <- ggplot example for this
+
+# * legend position----
+p + theme(legend.position = "none") # removes legend, can be top, bottom, left or right
+p + theme(legend.position=c(0.5,0.8)) # specific coordinate
+
+# * element_line----
+p + theme(axis.line = element_line(color = "red", linetype = "dashed"))
+  # makes a red dashed axis line
+
+# * element_rect----
+p + theme(rect=element_rect(fill="grey92"), # background fill
+          legend.key=element_rect(color="green")) # legend border
+
+# * element_blank----
+p + theme(axis.ticks = element_blank(), # remove axis tick by = element_blank
+          panel.grid = element_blank()) # same for panel grid
+
+# * element_line
+p + theme(panel.grid.major.y = element_line(color="blue", 
+                                            size=0.5,
+                                            linetype='dotted'))
+
+
+
+
+
+
