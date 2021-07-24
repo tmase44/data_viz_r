@@ -503,7 +503,7 @@ ggplot(gm2007, aes(x = lifeExp, y = country, color = lifeExp)) +
   scale_color_gradientn(colors = palette) +
   labs(title="Highest and lowest life expectancies, 2007",caption="Source: gapminder")
 
-# * annotate
+# * annotate----
 
   # DATACAMP DATA
 
