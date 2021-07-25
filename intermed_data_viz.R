@@ -2,6 +2,7 @@
 library(tidyverse) 
 library(ggplot2)
 library(ggthemes)
+install.packages("quantreg")
 
 # Data prep----
 mtcars<-mtcars 
@@ -11,7 +12,7 @@ mtcars$fcyl<-factor(mtcars$cyl) # it's now categorical, not just numbers
 mtcars$fam<-mtcars$am # same for auto
 mtcars$fam<-recode(mtcars$fam,'0'='Automatic','1'='Manual')
 
-vocab$yearg<-factor(vocab$year) # for education data
+vocab$year_group2<-factor(vocab$year_group) # for education data
 
 # INTERMEDIATE TOPICS----
   # stats
@@ -105,14 +106,67 @@ mtcars %>%
 
 # Using Vocab, plot vocabulary vs. education, colored by year group
 
-ggplot(vocab,aes(education,vocabulary,color=yearg)) +
+ggplot(vocab,aes(education,vocabulary,color=year_group2)) +
   geom_jitter(alpha=0.25) +
-  stat_smooth(aes(color=yearg),method="lm",size=2,alpha=0.2)
+  stat_smooth(aes(color=year_group2),method="lm",size=2)
 # plot many variables at once. 
   # THIS is an extreme example and should never actually be done with such data
 
 
 # SUM & QUANTILE----
 
+# * stat_quantile()----
+
+  # geom_count & geom_quantile
+vocab %>% 
+  ggplot(aes(education,vocabulary))+
+  geom_jitter(alpha=0.25)+
+  stat_quantile(quantiles = c(0.05,0.5,0.95))
+
+?stat_quantile # this requires "quantreg" package
+
+vocab %>% # adding color for year group
+  ggplot(aes(education,vocabulary,color=year_group2))+
+  geom_jitter(alpha=0.25)+
+  stat_quantile(quantiles = c(0.05,0.5,0.95))
+# see the quantiles per group! better!
+
+# * stat_sum()----
+
+  # the VOCAB dataset is a great example of overplotting. One solution
+  # is using jitter + alpha. SUM is another solution that also has an
+  # additional property ..prop.. which displays proportion of values
+
+# with jitter + alpha
+vocab %>% 
+  ggplot(aes(education,vocabulary))+
+  geom_jitter(alpha=0.25)
+
+# with STAT_SUM
+vocab %>% 
+  ggplot(aes(education,vocabulary))+
+  stat_sum()
+
+# adjust range of the scale as per Y-AXIS
+vocab %>% 
+  ggplot(aes(education,vocabulary))+
+  stat_sum()+
+  scale_size(range=c(1,10)) 
+
+# adjust range to be ..proportional.. to the dataset
+vocab %>% 
+  ggplot(aes(education,vocabulary))+
+  stat_sum()+
+  scale_size(aes(size=..prop..)) # same as the default...
+
+# proportional to the group DO THIS INSIDE stat_sum
+vocab %>% 
+  ggplot(aes(education,vocabulary,group=education))+
+  stat_sum(aes(size=..prop..))
 
 
+# STATS OUTSIDE GEOMS----
+
+
+
+           

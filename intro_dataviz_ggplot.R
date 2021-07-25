@@ -7,6 +7,9 @@ library(ggthemes)
   # important to first plot data and check if outliers and extreme values 
     # influence the way data should be correctly plotted
 
+vocab<-read_csv("Vocab.csv")
+view(vocab)
+
 str(mtcars)
 structure(mtcars)
 colnames(mtcars)
