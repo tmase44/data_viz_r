@@ -205,7 +205,8 @@ ggplot(iris,aes(Sepal.Length,Sepal.Width,col=Species))+
   # here I can add on the means, the x,y are inherited from aes!
 
 # OVERPLOTTING----
-  
+
+  # EVERY DATA POINT MUST BE VISIBLE IN A GEOM_POINT()
   # Issue with large datasets
   # aligned values on a single axis
   # low precision data

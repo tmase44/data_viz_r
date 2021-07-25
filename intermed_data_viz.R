@@ -1,9 +1,9 @@
-#++-import libraries-++-------------------------------------------------------
+#++-import libraries-++----
 library(tidyverse) 
 library(ggplot2)
 library(ggthemes)
 
-# Data prep--------------------------------------------------------------------
+# Data prep----
 mtcars<-mtcars 
 
 # "cyl" is a factor. "fcyl" and am to "fam"
@@ -11,13 +11,15 @@ mtcars$fcyl<-factor(mtcars$cyl) # it's now categorical, not just numbers
 mtcars$fam<-mtcars$am # same for auto
 mtcars$fam<-recode(mtcars$fam,'0'='Automatic','1'='Manual')
 
-# INTERMEDIATE TOPICS---------------------------------------------------------
+vocab$yearg<-factor(vocab$year) # for education data
+
+# INTERMEDIATE TOPICS----
   # stats
   # coordinates
   # facets
   # best practices
 
-# STATS WITH GEOMS-------------------------------------------------------------
+# STATS WITH GEOMS----
 
   # 2 major types: 1) called within a geom & 2) called independently 
 
@@ -39,7 +41,7 @@ mtcars$fam<-recode(mtcars$fam,'0'='Automatic','1'='Manual')
     # stat_quantile....
     # stat_csum for geom_count
 
-# * stat_smooth basics---------------------------------------------------------
+# * stat_smooth basics----
 
   # LOESS (default)
 mtcars %>% 
@@ -99,6 +101,18 @@ mtcars %>%
   stat_smooth(method="lm",se=FALSE)
 # !!! "All" is just a dummy, it could be named anything and still have the same effect
 
-# * modifying stat_smooth()----------------------------------------------------
+# * modifying stat_smooth()----
+
+# Using Vocab, plot vocabulary vs. education, colored by year group
+
+ggplot(vocab,aes(education,vocabulary,color=yearg)) +
+  geom_jitter(alpha=0.25) +
+  stat_smooth(aes(color=yearg),method="lm",size=2,alpha=0.2)
+# plot many variables at once. 
+  # THIS is an extreme example and should never actually be done with such data
+
+
+# SUM & QUANTILE----
+
 
 
