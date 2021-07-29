@@ -2,7 +2,9 @@
 library(tidyverse) 
 library(ggplot2)
 library(ggthemes)
+library(Hmisc)
 install.packages("quantreg")
+install.packages("Hmisc")
 
 # Data prep----
 mtcars<-mtcars 
@@ -167,6 +169,55 @@ vocab %>%
 
 # STATS OUTSIDE GEOMS----
 
+# Hmisc package can summarize mean + - 1 st dev as a vector
+
+smean.sdl(iris.summary$Sepal.Length, mult = 1) # mult = 1 means 1 std dev. can be more
+
+# in ggplot2 "mean_sdl" converts this into a dataframe to be used
+  # with the stat_summary(fun.data = ... argument)
+
+mean_sdl(iris.summary$Sepal.Length, mult = 1) 
+# in ggplot2:
+ggplot(iris,aes(Species,Sepal.Length))+
+  stat_summary(fun.data = mean_sdl,
+               fun.args = list(mult=1))
+# it uses geom_pointrange by default
+
+ggplot(iris,aes(Species,Sepal.Length))+
+  stat_summary(fun.y = mean,
+               geom="point")+
+  stat_summary(fun.data = mean_sdl,
+               fun.args = list(mult=1),
+               geom="errorbar", width=0.1)
 
 
-           
+# Data or chart elements can be prepared outside of the chart as vectors
+  # and added laters
+
+# PART 1 create the position objects. These re later called by using
+  # position= within geom_*()
+posn_j<-position_jitter(width=0.2) # jitter position for later
+posn_d<-position_dodge(width=0.1) # dodge
+posn_jd<-position_jitterdodge(jitter.width = 0.2,dodge.width = 0.1) # both
+
+# create the base plot
+p_wt_vs_fcyl_by_fam <- ggplot(mtcars,aes(fcyl,wt,color=fam))
+  # with jitter geom
+p_wt_vs_fcyl_by_fam_jit <- p_wt_vs_fcyl_by_fam + geom_jitter()
+
+# PART 2 - apply the positions to the base chart
+p_wt_vs_fcyl_by_fam_jit + geom_point(position=posn_j) # jitter only
+p_wt_vs_fcyl_by_fam_jit + geom_point(position=posn_d) # dodge only
+p_wt_vs_fcyl_by_fam_jit + geom_point(position=posn_jd) # jitterdodge
+
+
+p_wt_vs_fcyl_by_fam_jit +
+  stat_summary(fun.data = mean_sdl, # adding summary stats
+               fun.args = list(mult=1),
+               geom="errorbar",position = posn_d)
+
+
+
+
+                 
+
