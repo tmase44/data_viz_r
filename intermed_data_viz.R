@@ -3,8 +3,12 @@ library(tidyverse)
 library(ggplot2)
 library(ggthemes)
 library(Hmisc)
+library(zoo)
+library(reshape2)
 install.packages("quantreg")
 install.packages("Hmisc")
+install.packages("zoo")
+install.packages("reshape2")
 
 # Data prep----
 mtcars<-mtcars 
@@ -216,8 +220,123 @@ p_wt_vs_fcyl_by_fam_jit +
                fun.args = list(mult=1),
                geom="errorbar",position = posn_d)
 
+p_wt_vs_fcyl_by_fam_jit +
+  stat_summary(fun.data = mean_cl_normal,
+               position = posn_d)
+  # this chart marks the mean for each category
+
+# COORDINATES LAYER----
+
+# controls dimmension of the plot
+  # coord_* functions eg: coord_cartesian() most common
+
+# * zooming in----
+
+iris.smooth <- ggplot(iris,aes(Sepal.Length,Sepal.Width,
+                               color=Species))+
+  geom_point(alpha=0.7)+
+  geom_smooth()
+iris.smooth
+
+# I can use this function which will return a WARNING because the limits
+# set are a smaller range than the dataset in total, and some data has been
+# left out
+iris.smooth + scale_x_continuous(limits=c(4.5,5.5)) 
+# part of original data has been filtered out, compare to iris.smooth!
+
+iris.smooth + xlim(c(4.4,5.5))
+# another alternative, same warning
+
+iris.smooth + coord_cartesian(xlim=c(4.4,5.5))
+# COORD CARTESIAN KEEPS DATA!
+  # the curves look the same as the original plot!!!!!
+iris.smooth
 
 
+# * aspect ratio----
+  # height to width ratio
 
+# this is important for long time series. 
+# e.g. 100 years on a plot should probably not be 1:1 aspect ratio
+  # meaning x & y should not necessarily be the same size
+
+    # COORD_FIXED
+
+# * practice----
+
+# coord_cartesian / zooming
+
+ggplot(mtcars, aes(x = wt, y = hp, color = fam)) +
+  geom_point() +
+  geom_smooth()+
+  scale_x_continuous(limits=c(3,6)) # this does NOT work too much data loss
+
+ggplot(mtcars, aes(x = wt, y = hp, color = fam)) +
+  geom_point() +
+  geom_smooth()+
+  coord_cartesian(xlim=c(3,6)) # PROPER ZOOM no data loss
+
+# aspect ratios
+
+ggplot(iris, aes(x = Sepal.Length, y = Sepal.Width, color = Species)) +
+  geom_jitter() +
+  geom_smooth(method = "lm", se = FALSE) +
+  coord_fixed() # adds a fixed 1:1 aspect ratio
+                # 1:1 is good when axis have the same scale
+
+# setting ratios
+  # prepare some data first SUNPOT dataset + reshape 2 + zoo packages
+
+sunspots.m <- data.frame(year = index(sunspot.month), 
+                         value = melt(sunspot.month)$value)
+sun_plot <- ggplot(sunspots.m, aes(x = year, y = value)) + 
+  geom_line()
+
+?coord_fixed
+sun_plot + coord_fixed() # this does not work
+sun_plot + coord_fixed(ratio = 1/20) # better ratio. Developments over time clear
+
+# * expand / clip----
+ggplot(mtcars, aes(wt, mpg)) +
+  geom_point(size = 2) +
+  coord_cartesian(expand=0) #sets a buffer between data points and axis lines
+  theme_classic()         # 0 brings the axes to the limits of the data
+ 
+ggplot(mtcars, aes(wt, mpg)) +
+  geom_point(size = 2) +
+  coord_cartesian(expand=0,clip = "off")+ # clip OFF allows data to overlap the axis
+  theme_classic()+
+    theme(axis.line = element_blank()) # remove axis lines for effect
+
+
+# COORDINATES vs SCALES----
+
+  # positively skewed data (clustered left)
+ggplot(msleep,aes(bodywt,y=1))+
+  geom_jitter()+
+  scale_x_continuous(limits = c(0,7000),
+                     breaks = seq(0,7000,1000))
+
+  # can be transformed to focus on the skew
+    # log10 makes skewed data appear more normal
+ggplot(msleep,aes(log10(bodywt),y=1))+
+  geom_jitter()+
+  scale_x_continuous(limits = c(-3,4),
+                     breaks = -3:4)+
+  # but precision is lost
+  annotation_logticks(sides="b") # this helps but lacks context (original values)
+
+# another solution is to have data on a log scale BUT label with original values
+ggplot(msleep,aes(bodywt,y=1))+
+  geom_jitter()+
+  scale_x_log10(limits=c(1e-03,1e+04))
+
+# coord_trans is more flexible, any transformation is possible
+?coord_trans
+ggplot(msleep,aes(bodywt,y=1))+
+  geom_jitter()+
+  coord_trans(x="log10") 
+
+# * ----
                  
 
