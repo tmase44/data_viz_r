@@ -337,6 +337,56 @@ ggplot(msleep,aes(bodywt,y=1))+
   geom_jitter()+
   coord_trans(x="log10") 
 
-# * ----
-                 
+# * log transforming scales ----
+
+# Using scale_y_log10() and scale_x_log10() is equivalent to transforming 
+  #our actual dataset before getting to ggplot2.
+# Using coord_trans(), setting x = "log10" and/or y = "log10" arguments, 
+  #transforms the data after statistics have been calculated. 
+  # The plot will look the same as with using scale_*_log10(), 
+  # but the scales will be different, meaning that we'll see the 
+  # original values on our log10 transformed axes. 
+  # This can be useful since log scales can be somewhat unintuitive.
+
+# positively skewed data                 
+ggplot(msleep, aes(bodywt, brainwt)) +
+  geom_point() +
+  ggtitle("Scale_ functions")
+
+# now adding scale_* functions better plots the data
+ggplot(msleep, aes(bodywt, brainwt)) +
+  geom_point() +
+  scale_x_log10()+
+  scale_y_log10()+
+  ggtitle("Scale_ functions")
+
+# Alternatively.. using coord_trans to specify log10 on both X & Y 
+ggplot(msleep, aes(bodywt, brainwt)) +
+  geom_point() +
+  coord_trans(x="log10",y="log10")
+  ggtitle("Scale_ functions")
+  
+# * on a trendline----
+  # this works
+ggplot(msleep, aes(bodywt, brainwt)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)+
+  scale_x_log10()+
+  scale_y_log10()+
+  ggtitle("Scale_Functions")
+
+  # this does not
+ggplot(msleep, aes(bodywt, brainwt)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)+
+  coord_trans(x="log10",y="log10")+
+  ggtitle("Scale_Functions")
+
+# because the smooth trend line is calculated after scale_* transformations
+  # but not after coord_trans transformations!!!!!!!
+
+
+# DOUBLE & FLIPPED AXIS----
+
+
 
