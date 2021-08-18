@@ -5,10 +5,12 @@ library(ggthemes)
 library(Hmisc)
 library(zoo)
 library(reshape2)
+library(openair)
 install.packages("quantreg")
 install.packages("Hmisc")
 install.packages("zoo")
 install.packages("reshape2")
+install.packages("openair")
 
 # Data prep----
 mtcars<-mtcars 
@@ -17,8 +19,9 @@ mtcars<-mtcars
 mtcars$fcyl<-factor(mtcars$cyl) # it's now categorical, not just numbers
 mtcars$fam<-mtcars$am # same for auto
 mtcars$fam<-recode(mtcars$fam,'0'='Automatic','1'='Manual')
-
+vocab <- read.csv("Vocab.csv")
 vocab$year_group2<-factor(vocab$year_group) # for education data
+iris<-iris
 
 # INTERMEDIATE TOPICS----
   # stats
@@ -387,6 +390,98 @@ ggplot(msleep, aes(bodywt, brainwt)) +
 
 
 # DOUBLE & FLIPPED AXIS----
+  # double x / y axis is discouraged strongly
+
+# double axis----
+airquality <- airquality
+# combine dat and month fields
+airquality$date <- as.Date(with(airquality, paste(Month, Day,sep="-")), "%m-%d")
+airquality$date
+
+ggplot(airquality,aes(date,Temp))+ # temp is in Farenheit
+  geom_line()+
+  labs(x = "Date (1973)", y = "Fahrenheit")
+
+# Define breaks (Fahrenheit)
+y_breaks <- c(59, 68, 77, 86, 95, 104)
+y_labels <- (y_breaks)*5/9 # convert F to C, -32 * 5 / 9
+
+# Create a secondary x-axis
+secondary_y_axis <- sec_axis(breaks = y_breaks, 
+                             labels = y_labels, 
+                             trans = identity,
+                             name = 'Celsius')
+
+# now with secondary axis
+ggplot(airquality,aes(date,Temp))+ # temp is in Farenheit
+  geom_line()+
+  scale_y_continuous(sec.axis = secondary_y_axis)+
+  labs(x = "Date (1973)", y = "Fahrenheit") 
+?scale_y_continuous
+
+# flipped axis----
+
+ggplot(mtcars, aes(fcyl,fill=fam))+
+  geom_bar(position = position_dodge(width=0.5))+
+  coord_flip()
+
+# this charts looks weird and needs to be flipped
+ggplot(mtcars, aes(car, wt)) + # car is the brand name
+  geom_point() +
+  labs(x = "car", y = "weight")+
+  coord_flip() # without coord flip x-axis is unreadable
+
+# Polar coordinates----
+  # Cartesian (2d) = normal x and y axis
+  # Polar coordinates are make modifications to the standard axis
+
+# pie charts----
+ggplot(mtcars, aes(x = 1, fill = fcyl)) +
+  geom_bar(width = 0.1)+
+  # now add
+  coord_polar(theta = "y")+
+  scale_x_continuous(limits = (0.5:1.5))
+# reducing bar width and addind scale_x_cont.. create sa ring plot
+
+# wind rose plots----
+
+ggplot(wind, aes(wd, fill = ws)) +
+  geom_bar(width = 1) +
+  coord_polar(start = -pi/16) #positions north at the top
+
+# THE FACETS LAYER----
+  # concept of small multiples (Edward Tufte)
+
+# split up a plot into smaller plots with the same coordinate system
+  # different data sets on each plot for comparisons
+
+# if data are not not encoded as factor variables in the data set, 
+  # ggplot2 will coerce variables to factors when used in facets.
+
+# simple, facet grid with 2 variables----
+ggplot(mtcars, aes(wt, mpg)) + 
+  geom_point() +
+  # Facet rows by am and cols by cyl
+  facet_grid(rows = vars(am), cols = vars(cyl))
+
+# more complex----
+  # create an interaction column where 2 factor columns are combined
+#https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/interaction
+mtcars$fcyl_fam <- interaction(mtcars$cyl,mtcars$fam,sep = ":")
+mtcars$fcyl_fam 
+
+# Color the points by fcyl_fam
+ggplot(mtcars, aes(wt, mpg, color = fcyl_fam, size = disp)) +
+  geom_point() +
+  # Use a paired color palette
+  scale_color_brewer(palette = "Paired")+
+  # Grid facet on gear and vs
+  facet_grid(rows = vars(gear), cols = vars(vs))
+
+# formula notation----
 
 
 
+
+
+             
