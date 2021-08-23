@@ -6,21 +6,30 @@ library(Hmisc)
 library(zoo)
 library(reshape2)
 library(openair)
+library(RColorBrewer)
 install.packages("quantreg")
 install.packages("Hmisc")
 install.packages("zoo")
 install.packages("reshape2")
 install.packages("openair")
-
+install.packages("RColorBrewer")
 # Data prep----
 mtcars<-mtcars 
 
+#mtcars
 # "cyl" is a factor. "fcyl" and am to "fam"
 mtcars$fcyl<-factor(mtcars$cyl) # it's now categorical, not just numbers
 mtcars$fam<-mtcars$am # same for auto
 mtcars$fam<-recode(mtcars$fam,'0'='Automatic','1'='Manual')
+mtcars$cars <- rownames(mtcars) # turn car name rows into a col
+mtcars$cars <- factor(mtcars$cars) # then a factor
+mtcars$fvs <- factor(mtcars$vs)
+
+# vocab
 vocab <- read.csv("Vocab.csv")
 vocab$year_group2<-factor(vocab$year_group) # for education data
+
+# iris
 iris<-iris
 
 # INTERMEDIATE TOPICS----
@@ -480,8 +489,227 @@ ggplot(mtcars, aes(wt, mpg, color = fcyl_fam, size = disp)) +
 
 # formula notation----
 
+ggplot(mtcars, aes(wt, mpg, color = fcyl_fam, size = disp)) +
+  geom_point() +
+  facet_grid(gear~vs) 
+# if only faceting one variable use "." to leave x or y blank
+#e.g.
+facet_grid(.~vs) 
+facet_grid(gear~.) 
+
+# Facet labels and order----
+  # FCT_RECODE----
+# extremely useful code for renaming factor levels
+
+mtcars$fam <- fct_recode(mtcars$fam,
+                         manual = "Manual", # in "..." is original level name
+                         auto = "Automatic")
+  # FCT_RELEVEL----
+# changes the order of levels to a user defined order
+mtcars$fam <- fct_relevel(mtcars$fam,
+                          c("auto", "manual"))
+
+# Labelling factors
+# if factor levels are not clear they can be renamed before plotting
+  # to make plots clearer
+
+ggplot(mtcars, aes(wt, mpg)) +
+  geom_point() +
+  facet_grid(cols=vars(cyl),labeller = label_both) # adds "cyl" to the top row labels
+# or
+ggplot(mtcars, aes(wt, mpg)) +
+  geom_point() +
+  facet_grid(cols=vars(vs,cyl),labeller = label_context) 
+
+# where "fam" is the relabelled factor of "am"
+ggplot(mtcars, aes(wt, mpg)) +
+  geom_point() +
+  facet_grid(cols = vars(fam)) # shows manual and auto instead of 0 and 1
+
+
+# Facet plotting spaces----
+
+# If the data ranges vary wildly between facets, it can be clearer if each facet 
+# has its own scale. This is achieved with the scales argument to facet_grid().
+
+# simple factors----           
+ggplot(mtcars, aes(wt, mpg)) +
+  geom_point() + 
+  facet_grid(cols=vars(cyl), scales = "free_x")
+# or
+ggplot(mtcars, aes(wt, mpg)) +
+  geom_point() + 
+  facet_grid(rows=vars(cyl), scales = "free_y")
+
+# complex factors----
+  # multiple levels and often white space or not values, it is often 
+  # desirable to drop the unused factors
+
+ggplot(mtcars, aes(x = mpg, y = cars, color = fam)) +
+  geom_point() +
+  facet_grid(rows=vars(gear)) # this is BAD!
+
+# remove the blanks
+ggplot(mtcars, aes(x = mpg, y = cars, color = fam)) +
+  geom_point() +
+  facet_grid(rows=vars(gear),
+             scales = "free_y",
+             space = "free_y") # removes the blank duplicates!
+
+# Facet wrap & margins----
+
+# useful if the plots / variables have different scales but we still want to 
+  # show everything together - plots can have their own axis
+# and when there are many levels in a group. E.g if a factor has 20 levels
+  # with facet_grid it would be 13 rows or cols which is impractical
+
+# wraping many levels----
+ggplot(vocab, aes(x = education, y = vocabulary)) +
+  stat_smooth(method = "lm", se = FALSE) +
+  # Create facets, wrapping by year, using vars()
+  facet_wrap(~year, ncol = 8) # ncol = 8 divides up the charts evenly
+
+# margin plots----
+ggplot(mtcars, aes(x = wt, y = mpg)) + 
+  geom_point() +
+  # Facet rows by fvs and cols by fam
+  facet_grid(rows=vars(fvs,fam),cols=vars(gear),
+             margins = TRUE) # adds all possible margins
+# this gives an "overall" plot column and row
+
+ggplot(mtcars, aes(x = wt, y = mpg)) + 
+  geom_point() +
+  # Facet rows by fvs and cols by fam
+  facet_grid(rows=vars(fvs,fam),cols=vars(gear),
+             margins = "fam") # specific levels of fam only
+
+ggplot(mtcars, aes(x = wt, y = mpg)) + 
+  geom_point() +
+  # Facet rows by fvs and cols by fam
+  facet_grid(rows=vars(fvs,fam),cols=vars(gear),
+             margins = c("gear","fvs")) 
+
+# BAR PLOTS----
+  # 2 types of bar plot 1) absolute values 2) distribution (bad)
+
+# bar plots can give wrong impressions because they start at zero.
+# point with jitter might often be better to show distribution
+
+# dynamite plots----
+  # =  a bar plot with error bars
+
+# Plot wt vs. fcyl
+ggplot(mtcars, aes(x = fcyl, y = wt)) +
+  # Add a bar summary stat of means, colored skyblue
+  stat_summary(fun = mean, geom = "bar", fill = "skyblue") +
+  # Add an errorbar summary stat std deviation limits
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), 
+               geom = "errorbar", width = 0.1)
+
+# bar plot: position dodge----
+# Update the aesthetics to color and fill by fam
+ggplot(mtcars, aes(x = fcyl, y = wt, color = fam, fill = fam)) +
+  stat_summary(fun = mean, geom = "bar") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), geom = "errorbar", width = 0.1)
+# BAD: hard to identify errors and bar data
+
+ggplot(mtcars, aes(x = fcyl, y = wt, color = fam, fill = fam)) +
+  stat_summary(fun = mean, geom = "bar",
+               alpha = 0.5, position = "dodge") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), 
+               geom = "errorbar", position = "dodge", width = 0.1)
+# BETTER: adds transparency and dodge (side by side)
+
+# and even better, center the error bar
+# Define a dodge position object with width 0.9
+posn_d2<-position_dodge(width=0.9) # dodge
+
+# For each summary stat, update the position to posn_d
+ggplot(mtcars, aes(x = fcyl, y = wt, color = fam, fill = fam)) +
+  stat_summary(fun = mean, geom = "bar", position = posn_d2, alpha = 0.5) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), width = 0.1, 
+               position = posn_d2, geom = "errorbar")
+
+# bar plots: aggregated data----
+
+# I can also create an aggregate plot, first needs an aggregate data frame
+# using a dataframe with mean, sd and n of wt per cyl
+ggplot(mtcars_by_cyl, aes(x = cyl, y = mean_wt)) +
+  geom_col(aes(width = prop), fill = "skyblue") +
+  geom_errorbar(
+    # ... at mean weight plus or minus 1 std dev, width 0.1
+    aes(ymin = mean_wt - sd_wt, ymax = mean_wt + sd_wt),width = 0.1)
+
+# HEATMAPS----
+  # example
+head(barley)
+barley<-barley
+
+ggplot(barley,aes(year,variety,fill=yield))+
+         geom_tile()+
+         facet_wrap(vars(site),ncol = 1)
+# this is not effective because there are too many measures. A heatmap would  
+  # be better for an overall picture
+
+# DOT PLOT----
+ggplot(barley,aes(yield,variety,color=year))+
+  geom_point()+
+  facet_wrap(vars(site),ncol = 1)
+# this is better because differences between years are clearer
+
+# TIME SERIES
+ggplot(barley,aes(year,yield,group=variety,color=variety))+
+  geom_line()+
+  facet_wrap(vars(site),nrow = 1)
+# this is easier to see general trends but not as good as dotplot for detail
+
+# practice----
+
+ggplot(barley, aes(year, variety, fill = yield)) +
+  geom_tile() + 
+  # Facet, wrapping by site, with 1 column
+  facet_wrap(vars(site), ncol = 1) +
+  # Add a fill scale using an 2-color gradient
+  scale_fill_gradient(low = "white", high = "red")
+
+# A palette of 9 reds
+red_brewer_palette <- brewer.pal(9, "Reds")
+# update the plot
+ggplot(barley, aes(year, variety, fill = yield)) +
+  geom_tile() + 
+  facet_wrap(vars(site), ncol = 1) +
+  # Add a fill scale using an 2-color gradient
+  scale_fill_gradientn(colors=red_brewer_palette) # note the gradientn
+
+# this is still not easy to read ^^
+
+ggplot(barley,aes(year,yield,
+                  group=site, color=variety,fill=site))+
+  geom_line()+
+facet_wrap(.~site,nrow=1)
+# plots side by side
+
+ggplot(barley,aes(year,yield,group=site, color=site,fill=site))+
+  stat_summary(fun=mean,geom="line")+
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), 
+               geom = "ribbon", alpha = 0.1, color = NA)
+# all in one
+
+# IMPORTANT POINTS----
+
+#colour blindness----
+  # avoid red and green on the same plot
+  # they can be used together if they have different intensities
+  # but generally try to avoid this
+
+# numeric values as factors
+  # if numeric data are stored as factors, then the spacing when plotted will be off
+  # that can be resolved like this:
+df$col <- as.numeric(as.character(df$col))
 
 
 
 
-             
+
+
+# end----

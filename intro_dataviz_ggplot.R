@@ -3,6 +3,10 @@ library(tidyverse)
 library(ggplot2)
 library(ggthemes)
 
+library(sjPlot) #sjmisc, sjlabelled
+install.packages("sjPlot")
+# https://cran.r-project.org/web/packages/sjPlot/vignettes/tab_model_estimates.html
+
 # Data-viz intri - Datacamp----
   # important to first plot data and check if outliers and extreme values 
     # influence the way data should be correctly plotted
