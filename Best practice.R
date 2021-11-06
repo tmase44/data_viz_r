@@ -7,6 +7,8 @@
 
 library(tidyverse)
 library(waffle)
+install.packages('waffle')
+install.packages('extrafontdb')
 install.packages("Rttf2pt1")
 who_disease <- read.csv("who_disease.csv")
 head(who_disease)
